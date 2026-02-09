@@ -40,7 +40,7 @@ export function LocationStep({ formData, setFormData }) {
           type="text"
           value={formData.zipCode}
           onChange={(e) => {
-            const value = e.target.value.replace(/\D/g, '').slice(0, 5);
+            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
             setFormData({...formData, zipCode: value});
           }}
           placeholder="Enter ZIP code"
