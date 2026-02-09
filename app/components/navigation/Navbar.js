@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
@@ -24,7 +24,7 @@ const NavContent = styled.div`
 `;
 
 const Logo = styled(Link)`
-  font-size: 1.5rem;
+  font-size: 2.0rem;
   font-weight: 700;
   color: #0066FF;
   text-decoration: none;
@@ -37,6 +37,10 @@ const NavLinks = styled.div`
   display: flex;
   gap: 2rem;
   align-items: center;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const NavLink = styled(Link)`
@@ -76,8 +80,81 @@ const Button = styled(Link)`
   }
 `;
 
+const MenuButton = styled.button`
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #333;
+  padding: 0.5rem;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+
+  &:hover {
+    color: #0066FF;
+  }
+`;
+
+const Dashboard = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  z-index: 999;
+
+  @media (min-width: 769px) {
+    display: none;
+  }
+`;
+
+const DashboardContent = styled(motion.div)`
+  background: white;
+  margin-top: 70px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const DashboardLink = styled(Link)`
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  font-size: 1.1rem;
+  padding: 0.75rem 0;
+
+  &:hover {
+    color: #0066FF;
+  }
+`;
+
+const DashboardButton = styled(Link)`
+  background: #0066FF;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: inline-block;
+  text-align: center;
+
+  &:hover {
+    background: #0052CC;
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
+  }
+`;
+
 export function Navbar() {
   const [isMounted, setIsMounted] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -94,53 +171,97 @@ export function Navbar() {
     hover: { scale: 1.05 }
   };
 
+  const dashboardVariants = {
+    hidden: { opacity: 0, x: 300 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+    exit: { opacity: 0, x: 300, transition: { duration: 0.2 } }
+  };
+
   return (
-    <NavbarContainer>
-      <NavContent>
-        <Logo href="/">
-          <motion.span
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            whileHover={{ scale: 1.05 }}
-          >
-            Better
-          </motion.span>
-        </Logo>
-        <NavLinks>
-          {[
-            { href: '/about-us', label: 'About Us' },
-            { href: '/mortgage-calculator', label: 'Calculator' }
-          ].map(({ href, label }) => (
+    <>
+      <NavbarContainer>
+        <NavContent>
+          <Logo href="/">
+            <motion.span
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              whileHover={{ scale: 1.05 }}
+            >
+              Better
+            </motion.span>
+          </Logo>
+          <NavLinks>
+            {[
+              { href: '/about-us', label: 'About Us' },
+              { href: '/mortgage-calculator', label: 'Calculator' }
+            ].map(({ href, label }) => (
+              <motion.div
+                key={href}
+                variants={linkVariants}
+                initial="initial"
+                animate="animate"
+                whileHover="hover"
+              >
+                <NavLink href={href}>
+                  {label}
+                  {pathname === href && (
+                    <NavLinkIndicator
+                      layoutId="navIndicator"
+                      initial={false}
+                      animate={{ opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    />
+                  )}
+                </NavLink>
+              </motion.div>
+            ))}
             <motion.div
-              key={href}
               variants={linkVariants}
               initial="initial"
               animate="animate"
               whileHover="hover"
             >
-              <NavLink href={href}>
-                {label}
-                {pathname === href && (
-                  <NavLinkIndicator
-                    layoutId="navIndicator"
-                    initial={false}
-                    animate={{ opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                  />
-                )}
-              </NavLink>
+              <Button href="/start">Get Started</Button>
             </motion.div>
-          ))}
-          <motion.div
-            variants={linkVariants}
-            initial="initial"
-            animate="animate"
-            whileHover="hover"
+          </NavLinks>
+          <MenuButton onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            ☰
+          </MenuButton>
+        </NavContent>
+      </NavbarContainer>
+
+      <AnimatePresence>
+        {isMenuOpen && (
+          <Dashboard
+            variants={dashboardVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            onClick={() => setIsMenuOpen(false)}
           >
-            <Button href="/start">Get Started</Button>
-          </motion.div>
-        </NavLinks>
-      </NavContent>
-    </NavbarContainer>
+            <DashboardContent onClick={(e) => e.stopPropagation()}>
+              {[
+                { href: '/about-us', label: 'About Us' },
+                { href: '/mortgage-calculator', label: 'Calculator' }
+              ].map(({ href, label }) => (
+                <DashboardLink
+                  key={href}
+                  href={href}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {label}
+                </DashboardLink>
+              ))}
+              <DashboardButton
+                href="/start"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Get Started
+              </DashboardButton>
+            </DashboardContent>
+          </Dashboard>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
