@@ -2,6 +2,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { metadata } from './metadata';
 import StyledComponentsRegistry from './registry';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -15,6 +16,7 @@ export default function RootLayout({ children }) {
         <StyledComponentsRegistry>
           {children}
         </StyledComponentsRegistry>
+        <SpeedInsights />
       </body>
     </html>
   );
